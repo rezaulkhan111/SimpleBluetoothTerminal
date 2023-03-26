@@ -1,155 +1,136 @@
-package de.kai_morich.simple_bluetooth_terminal;
+package de.kai_morich.simple_bluetooth_terminal
 
-import android.text.Editable;
-import android.text.InputType;
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
-import android.text.style.BackgroundColorSpan;
-import android.widget.TextView;
+import android.text.*
+import android.text.style.BackgroundColorSpan
+import android.widget.TextView
+import androidx.annotation.ColorInt
+import java.io.ByteArrayOutputStream
 
-import androidx.annotation.ColorInt;
-
-import java.io.ByteArrayOutputStream;
-
-final class TextUtil {
-
-    @ColorInt static int caretBackground = 0xff666666;
-
-    final static String newline_crlf = "\r\n";
-    final static String newline_lf = "\n";
-
-    static byte[] fromHexString(final CharSequence s) {
-        ByteArrayOutputStream buf = new ByteArrayOutputStream();
-        byte b = 0;
-        int nibble = 0;
-        for(int pos = 0; pos<s.length(); pos++) {
-            if(nibble==2) {
-                buf.write(b);
-                nibble = 0;
-                b = 0;
+internal object TextUtil {
+    @ColorInt
+    var caretBackground = -0x99999a
+    const val newline_crlf = "\r\n"
+    const val newline_lf = "\n"
+    fun fromHexString(s: CharSequence): ByteArray {
+        val buf = ByteArrayOutputStream()
+        var b: Byte = 0
+        var nibble = 0
+        for (pos in 0 until s.length) {
+            if (nibble == 2) {
+                buf.write(b.toInt())
+                nibble = 0
+                b = 0
             }
-            int c = s.charAt(pos);
-            if(c>='0' && c<='9') { nibble++; b *= 16; b += c-'0';    }
-            if(c>='A' && c<='F') { nibble++; b *= 16; b += c-'A'+10; }
-            if(c>='a' && c<='f') { nibble++; b *= 16; b += c-'a'+10; }
+            val c = s[pos].code
+            if (c >= '0'.code && c <= '9'.code) {
+                nibble++
+                (b *= 16).toByte()
+                (b += (c - '0'.code).toByte()).toByte()
+            }
+            if (c >= 'A'.code && c <= 'F'.code) {
+                nibble++
+                (b *= 16).toByte()
+                (b += (c - 'A'.code + 10).toByte()).toByte()
+            }
+            if (c >= 'a'.code && c <= 'f'.code) {
+                nibble++
+                (b *= 16).toByte()
+                (b += (c - 'a'.code + 10).toByte()).toByte()
+            }
         }
-        if(nibble>0)
-            buf.write(b);
-        return buf.toByteArray();
+        if (nibble > 0) buf.write(b.toInt())
+        return buf.toByteArray()
     }
 
-    static String toHexString(final byte[] buf) {
-        return toHexString(buf, 0, buf.length);
+    @JvmOverloads
+    fun toHexString(buf: ByteArray, begin: Int = 0, end: Int = buf.size): String {
+        val sb = StringBuilder(3 * (end - begin))
+        toHexString(sb, buf, begin, end)
+        return sb.toString()
     }
 
-    static String toHexString(final byte[] buf, int begin, int end) {
-        StringBuilder sb = new StringBuilder(3*(end-begin));
-        toHexString(sb, buf, begin, end);
-        return sb.toString();
-    }
-
-    static void toHexString(StringBuilder sb, final byte[] buf) {
-        toHexString(sb, buf, 0, buf.length);
-    }
-
-    static void toHexString(StringBuilder sb, final byte[] buf, int begin, int end) {
-        for(int pos=begin; pos<end; pos++) {
-            if(sb.length()>0)
-                sb.append(' ');
-            int c;
-            c = (buf[pos]&0xff) / 16;
-            if(c >= 10) c += 'A'-10;
-            else        c += '0';
-            sb.append((char)c);
-            c = (buf[pos]&0xff) % 16;
-            if(c >= 10) c += 'A'-10;
-            else        c += '0';
-            sb.append((char)c);
+    @JvmOverloads
+    fun toHexString(sb: StringBuilder, buf: ByteArray, begin: Int = 0, end: Int = buf.size) {
+        for (pos in begin until end) {
+            if (sb.length > 0) sb.append(' ')
+            var c: Int
+            c = (buf[pos].toInt() and 0xff) / 16
+            c += if (c >= 10) 'A'.code - 10 else '0'.code
+            sb.append(c.toChar())
+            c = (buf[pos].toInt() and 0xff) % 16
+            c += if (c >= 10) 'A'.code - 10 else '0'.code
+            sb.append(c.toChar())
         }
     }
 
     /**
      * use https://en.wikipedia.org/wiki/Caret_notation to avoid invisible control characters
      */
-    static CharSequence toCaretString(CharSequence s, boolean keepNewline) {
-        return toCaretString(s, keepNewline, s.length());
-    }
-
-    static CharSequence toCaretString(CharSequence s, boolean keepNewline, int length) {
-        boolean found = false;
-        for (int pos = 0; pos < length; pos++) {
-            if (s.charAt(pos) < 32 && (!keepNewline ||s.charAt(pos)!='\n')) {
-                found = true;
-                break;
+    @JvmOverloads
+    fun toCaretString(s: CharSequence, keepNewline: Boolean, length: Int = s.length): CharSequence {
+        var found = false
+        for (pos in 0 until length) {
+            if (s[pos].code < 32 && (!keepNewline || s[pos] != '\n')) {
+                found = true
+                break
             }
         }
-        if(!found)
-            return s;
-        SpannableStringBuilder sb = new SpannableStringBuilder();
-        for(int pos=0; pos<length; pos++)
-            if (s.charAt(pos) < 32 && (!keepNewline ||s.charAt(pos)!='\n')) {
-                sb.append('^');
-                sb.append((char)(s.charAt(pos) + 64));
-                sb.setSpan(new BackgroundColorSpan(caretBackground), sb.length()-2, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        if (!found) return s
+        val sb = SpannableStringBuilder()
+        for (pos in 0 until length) if (s[pos].code < 32 && (!keepNewline || s[pos] != '\n')) {
+            sb.append('^')
+            sb.append((s[pos].code + 64).toChar())
+            sb.setSpan(
+                BackgroundColorSpan(caretBackground),
+                sb.length - 2,
+                sb.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        } else {
+            sb.append(s[pos])
+        }
+        return sb
+    }
+
+    internal class HexWatcher(private val view: TextView) : TextWatcher {
+        private val sb = StringBuilder()
+        private var self = false
+        private var enabled = false
+        fun enable(enable: Boolean) {
+            if (enable) {
+                view.inputType =
+                    InputType.TYPE_CLASS_TEXT + InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             } else {
-                sb.append(s.charAt(pos));
+                view.inputType = InputType.TYPE_CLASS_TEXT + InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
             }
-        return sb;
-    }
-
-
-    static class HexWatcher implements TextWatcher {
-
-        private final TextView view;
-        private final StringBuilder sb = new StringBuilder();
-        private boolean self = false;
-        private boolean enabled = false;
-
-        HexWatcher(TextView view) {
-            this.view = view;
+            enabled = enable
         }
 
-        void enable(boolean enable) {
-            if(enable) {
-                view.setInputType(InputType.TYPE_CLASS_TEXT + InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
-            } else {
-                view.setInputType(InputType.TYPE_CLASS_TEXT + InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
+        override fun afterTextChanged(s: Editable) {
+            if (!enabled || self) return
+            sb.delete(0, sb.length)
+            var i: Int
+            i = 0
+            while (i < s.length) {
+                val c = s[i]
+                if (c >= '0' && c <= '9') sb.append(c)
+                if (c >= 'A' && c <= 'F') sb.append(c)
+                if (c >= 'a' && c <= 'f') sb.append((c.code + 'A'.code - 'a'.code).toChar())
+                i++
             }
-            enabled = enable;
-        }
-
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-        }
-
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {
-        }
-
-        @Override
-        public void afterTextChanged(Editable s) {
-            if(!enabled || self)
-                return;
-
-            sb.delete(0,sb.length());
-            int i;
-            for(i=0; i<s.length(); i++) {
-                char c = s.charAt(i);
-                if(c >= '0' && c <= '9') sb.append(c);
-                if(c >= 'A' && c <= 'F') sb.append(c);
-                if(c >= 'a' && c <= 'f') sb.append((char)(c+'A'-'a'));
+            i = 2
+            while (i < sb.length) {
+                sb.insert(i, ' ')
+                i += 3
             }
-            for(i=2; i<sb.length(); i+=3)
-                sb.insert(i,' ');
-            final String s2 = sb.toString();
-
-            if(!s2.equals(s.toString())) {
-                self = true;
-                s.replace(0, s.length(), s2);
-                self = false;
+            val s2 = sb.toString()
+            if (s2 != s.toString()) {
+                self = true
+                s.replace(0, s.length, s2)
+                self = false
             }
         }
     }
-
 }
