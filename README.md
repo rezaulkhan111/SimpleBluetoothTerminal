@@ -9,6 +9,10 @@ For an overview on Android Bluetooth communication see
 
 This App implements RFCOMM connection to the well-known SPP UUID 00001101-0000-1000-8000-00805F9B34FB
 
+<img src="https://github.com/rezaulkhan111/SimpleBluetoothTerminal/blob/master_kotlin/image/home1.jpg" width="346" height="615" />
+
+<img src="https://github.com/rezaulkhan111/SimpleBluetoothTerminal/blob/master_kotlin/image/terminal.jpg" width="346" height="615" />
+
 ## Motivation
 
 I got various requests asking for help with Android development or source code for my 
