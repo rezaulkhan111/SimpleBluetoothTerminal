@@ -11,35 +11,41 @@ internal object TextUtil {
     var caretBackground = -0x99999a
     const val newline_crlf = "\r\n"
     const val newline_lf = "\n"
-    fun fromHexString(s: CharSequence): ByteArray {
-        val buf = ByteArrayOutputStream()
-        var b: Byte = 0
-        var nibble = 0
-        for (pos in 0 until s.length) {
-            if (nibble == 2) {
-                buf.write(b.toInt())
-                nibble = 0
-                b = 0
-            }
-            val c = s[pos].code
-            if (c >= '0'.code && c <= '9'.code) {
-                nibble++
-                (b *= 16).toByte()
-                (b += (c - '0'.code).toByte()).toByte()
-            }
-            if (c >= 'A'.code && c <= 'F'.code) {
-                nibble++
-                (b *= 16).toByte()
-                (b += (c - 'A'.code + 10).toByte()).toByte()
-            }
-            if (c >= 'a'.code && c <= 'f'.code) {
-                nibble++
-                (b *= 16).toByte()
-                (b += (c - 'a'.code + 10).toByte()).toByte()
-            }
-        }
-        if (nibble > 0) buf.write(b.toInt())
-        return buf.toByteArray()
+//    fun fromHexString(s: CharSequence): ByteArray {
+//        val buf = ByteArrayOutputStream()
+//        var b: Byte = 0
+//        var nibble = 0
+//        for (pos in 0 until s.length) {
+//            if (nibble == 2) {
+//                buf.write(b.toInt())
+//                nibble = 0
+//                b = 0
+//            }
+//            val c = s[pos].code
+//            if (c >= '0'.code && c <= '9'.code) {
+//                nibble++
+//                (b *= 16).toByte()
+//                (b += (c - '0'.code).toByte()).toByte()
+//            }
+//            if (c >= 'A'.code && c <= 'F'.code) {
+//                nibble++
+//                (b *= 16).toByte()
+//                (b += (c - 'A'.code + 10).toByte()).toByte()
+//            }
+//            if (c >= 'a'.code && c <= 'f'.code) {
+//                nibble++
+//                (b *= 16).toByte()
+//                (b += (c - 'a'.code + 10).toByte()).toByte()
+//            }
+//        }
+//        if (nibble > 0) buf.write(b.toInt())
+//        return buf.toByteArray()
+//    }
+
+    fun fromHexString(c: CharSequence): ByteArray {
+        check(c.length % 2 == 0) { "Must have an even length" }
+
+        return c.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
     }
 
     @JvmOverloads

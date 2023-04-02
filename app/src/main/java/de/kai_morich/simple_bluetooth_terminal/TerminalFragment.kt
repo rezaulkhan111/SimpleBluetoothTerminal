@@ -122,7 +122,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
         sendText!!.addTextChangedListener(hexWatcher)
         sendText!!.hint = if (hexEnabled) "HEX mode" else ""
         val sendBtn = view.findViewById<View>(R.id.send_btn)
-        sendBtn.setOnClickListener { v: View? -> send(sendText!!.getText().toString()) }
+        sendBtn.setOnClickListener { send(sendText!!.text.toString()) }
         return view
     }
 

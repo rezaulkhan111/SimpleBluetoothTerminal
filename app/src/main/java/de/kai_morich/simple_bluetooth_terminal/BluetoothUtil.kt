@@ -59,7 +59,7 @@ object BluetoothUtil {
             )
         )
         builder.setNegativeButton("Cancel", null)
-        builder.setPositiveButton("Settings") { dialog: DialogInterface?, which: Int ->
+        builder.setPositiveButton("Settings") { _: DialogInterface?, _: Int ->
             fragment.startActivity(
                 Intent(
                     Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
@@ -77,12 +77,13 @@ object BluetoothUtil {
     ): Boolean {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return true
         val missingPermissions =
-            fragment.activity!!.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
+            fragment.requireActivity()
+                .checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED
         val showRationale =
             fragment.shouldShowRequestPermissionRationale(Manifest.permission.BLUETOOTH_CONNECT)
         return if (missingPermissions) {
             if (showRationale) {
-                showRationaleDialog(fragment) { dialog: DialogInterface?, which: Int ->
+                showRationaleDialog(fragment) { _: DialogInterface?, _: Int ->
                     requestPermissionLauncher.launch(
                         Manifest.permission.BLUETOOTH_CONNECT
                     )
@@ -104,7 +105,7 @@ object BluetoothUtil {
         if (granted) {
             cb.call()
         } else if (showRationale) {
-            showRationaleDialog(fragment) { dialog: DialogInterface?, which: Int -> cb.call() }
+            showRationaleDialog(fragment) { _: DialogInterface?, _: Int -> cb.call() }
         } else {
             showSettingsDialog(fragment)
         }
