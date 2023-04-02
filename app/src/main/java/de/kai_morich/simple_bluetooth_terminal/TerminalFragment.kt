@@ -54,8 +54,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
         super.onStart()
         if (service != null) service!!.attach(this) else requireActivity().startService(
             Intent(
-                activity,
-                SerialService::class.java
+                requireActivity(), SerialService::class.java
             )
         ) // prevents service destroy on unbind from recreated activity caused by orientation change
     }
@@ -68,9 +67,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
     override fun onAttach(activity: Activity) {
         super.onAttach(activity)
         requireActivity().bindService(
-            Intent(getActivity(), SerialService::class.java),
-            this,
-            Context.BIND_AUTO_CREATE
+            Intent(getActivity(), SerialService::class.java), this, Context.BIND_AUTO_CREATE
         )
     }
 
@@ -107,9 +104,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
      * UI
      */
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_terminal, container, false)
         receiveText =
@@ -199,12 +194,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
                 msg = str
                 data = (str + newline).toByteArray()
             }
-            val spn = SpannableStringBuilder(
-                """
-    $msg
-    
-    """.trimIndent()
-            )
+            val spn = SpannableStringBuilder("""$msg """.trimIndent())
             spn.setSpan(
                 ForegroundColorSpan(resources.getColor(R.color.colorSendText)),
                 0,
@@ -235,8 +225,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
                         } else {
                             val edt = receiveText!!.editableText
                             if (edt != null && edt.length >= 2) edt.delete(
-                                edt.length - 2,
-                                edt.length
+                                edt.length - 2, edt.length
                             )
                         }
                     }
