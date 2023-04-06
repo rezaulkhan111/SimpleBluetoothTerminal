@@ -1,5 +1,6 @@
 package de.kai_morich.simple_bluetooth_terminal
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.bluetooth.BluetoothAdapter
@@ -10,12 +11,14 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.method.ScrollingMovementMethod
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import de.kai_morich.simple_bluetooth_terminal.SerialService.SerialBinder
 import de.kai_morich.simple_bluetooth_terminal.TextUtil.HexWatcher
+import java.nio.charset.Charset
 import java.util.*
 
 class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
@@ -103,6 +106,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
     /*
      * UI
      */
+    @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -117,6 +121,7 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
         sendText!!.addTextChangedListener(hexWatcher)
         sendText!!.hint = if (hexEnabled) "HEX mode" else ""
         val sendBtn = view.findViewById<View>(R.id.send_btn)
+        val tvRead = view.findViewById<TextView>(R.id.tv_read)
         sendBtn.setOnClickListener { send(sendText!!.text.toString()) }
         return view
     }
@@ -267,12 +272,14 @@ class TerminalFragment : Fragment(), ServiceConnection, SerialListener {
     }
 
     override fun onSerialRead(data: ByteArray?) {
+        Log.e("TF", "onSerialRead: single: " + data?.size)
         val datas = ArrayDeque<ByteArray?>()
         datas.add(data)
         receive(datas)
     }
 
     override fun onSerialRead(datas: ArrayDeque<ByteArray?>?) {
+        Log.e("TF", "onSerialRead: list: " + datas?.size)
         receive(datas)
     }
 

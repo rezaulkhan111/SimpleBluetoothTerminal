@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import java.io.IOException
 import java.security.InvalidParameterException
@@ -79,7 +80,6 @@ class SerialSocket(context: Context, device: BluetoothDevice) : Runnable {
     }
 
     override fun run() { // connect & read
-
         if (ActivityCompat.checkSelfPermission(
                 context,
                 Manifest.permission.BLUETOOTH_CONNECT
@@ -99,6 +99,7 @@ class SerialSocket(context: Context, device: BluetoothDevice) : Runnable {
                 return
             }
         connected = true
+        Log.e("SS", "run: $connected")
         try {
             val buffer = ByteArray(1024)
             var len: Int
